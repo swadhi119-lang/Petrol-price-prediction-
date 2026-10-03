@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Petrol Price Prediction</title>
+<style>
+:root{--bg:#0b1220;--panel:#121d30;--line:#26364d;--text:#eef4ff;--muted:#9db0c9;--accent:#55d6a7;--blue:#70a7ff}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:radial-gradient(circle at top right,#172b48 0,#0b1220 48%);color:var(--text);min-height:100vh}
+main{max-width:1100px;margin:auto;padding:30px 18px 50px}.top{display:flex;gap:16px;align-items:center;margin-bottom:24px}.logo{font-size:28px;background:#173b3b;padding:13px;border-radius:15px}.eyebrow{color:var(--accent);font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase}h1{font-size:clamp(26px,4vw,38px);margin:5px 0}p{color:var(--muted);line-height:1.55;margin-top:6px}.pill{margin-left:auto;border:1px solid #31536a;border-radius:30px;padding:8px 12px;color:#a9f0d7;font-size:12px;white-space:nowrap}
+.grid{display:grid;grid-template-columns:1fr 1.5fr;gap:18px}.panel,.metric{background:rgba(18,29,48,.92);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 12px 35px #0002}.panel h2{font-size:18px;margin:0 0 18px}label{display:block;font-size:13px;color:#c7d4e8;margin:16px 0 8px}select,input,button{font:inherit;width:100%;border-radius:10px;border:1px solid #354760;padding:12px;background:#0c1626;color:var(--text)}button{background:var(--accent);color:#06251b;border:0;font-weight:800;cursor:pointer;margin-top:18px}button:hover{filter:brightness(1.06)}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}.metric{padding:17px}.metric small{color:var(--muted);display:block;margin-bottom:9px}.metric strong{font-size:clamp(18px,2.5vw,26px)}.metric .sub{font-size:12px;color:var(--muted);margin-top:8px}.chartbox{height:300px}.chartbox canvas{width:100%;height:100%}.note{font-size:12px;color:var(--muted);margin-top:15px}.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;padding:11px;border-bottom:1px solid var(--line)}th{color:#a9c2e6;font-weight:700}.tag{color:var(--accent)}footer{text-align:center;color:#7488a3;font-size:12px;margin-top:24px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.metrics{grid-template-columns:1fr}.pill{display:none}.chartbox{height:250px}}
+</style>
+</head>
+<body>
+<main>
+  <header class="top"><div class="logo">⛽</div><div><div class="eyebrow">ML demo · built-in sample data</div><h1>Petrol Price Prediction</h1><p>Explore sample city prices and a simple trend-based estimate.</p></div><div class="pill">● Demo mode</div></header>
+  <section class="grid">
+    <div class="panel">
+      <h2>Prediction settings</h2>
+      <label for="city">Select city</label>
+      <select id="city"><option>Chennai</option><option>Delhi</option><option>Kolkata</option><option>Mumbai</option></select>
+      <label for="days">Predict days ahead</label>
+      <input id="days" type="number" min="1" max="30" value="7">
+      <button id="predict">Calculate prediction</button>
+      <p class="note">This standalone HTML demo uses illustrative sample values embedded in the page. It does not fetch live prices.</p>
+    </div>
+    <div class="panel">
+      <h2>Price trend</h2>
+      <div class="chartbox"><canvas id="chart" aria-label="Petrol price trend chart"></canvas></div>
+      <p class="note">Past sample values and the dotted estimate are shown for demonstration.</p>
+    </div>
+  </section>
+  <section class="metrics">
+    <div class="metric"><small>Latest sample price</small><strong id="latest">₹102.40</strong><div class="sub" id="cityLabel">Chennai</div></div>
+    <div class="metric"><small>Estimated price</small><strong id="estimate">₹102.68</strong><div class="sub" id="horizon">In 7 days</div></div>
+    <div class="metric"><small>Sample trend</small><strong id="trend">↗ Rising</strong><div class="sub">Based on recent sample points</div></div>
+  </section>
+  <section class="panel">
+    <h2>Built-in sample dataset</h2>
+    <p>Illustrative prices in ₹/litre. These are not verified historical or current market prices.</p>
+    <div class="tablewrap"><table><thead><tr><th>Sample day</th><th>Chennai</th><th>Delhi</th><th>Kolkata</th><th>Mumbai</th></tr></thead><tbody id="rows"></tbody></table></div>
+  </section>
+  <footer>Student project prototype · HTML, CSS and JavaScript · no installation or extraction needed</footer>
+</main>
+<script>
+const dataset = [
+ {day:"Day 1",Chennai:101.80,Delhi:94.72,Kolkata:105.41,Mumbai:103.44},
+ {day:"Day 2",Chennai:101.90,Delhi:94.78,Kolkata:105.48,Mumbai:103.52},
+ {day:"Day 3",Chennai:101.95,Delhi:94.81,Kolkata:105.51,Mumbai:103.58},
+ {day:"Day 4",Chennai:102.02,Delhi:94.86,Kolkata:105.57,Mumbai:103.64},
+ {day:"Day 5",Chennai:102.10,Delhi:94.91,Kolkata:105.63,Mumbai:103.70},
+ {day:"Day 6",Chennai:102.18,Delhi:94.95,Kolkata:105.69,Mumbai:103.77},
+ {day:"Day 7",Chennai:102.25,Delhi:95.00,Kolkata:105.74,Mumbai:103.82},
+ {day:"Day 8",Chennai:102.31,Delhi:95.03,Kolkata:105.80,Mumbai:103.88},
+ {day:"Day 9",Chennai:102.36,Delhi:95.07,Kolkata:105.84,Mumbai:103.93},
+ {day:"Day 10",Chennai:102.40,Delhi:95.10,Kolkata:105.90,Mumbai:103.98}
+];
+const cityEl=document.getElementById('city'), daysEl=document.getElementById('days'), canvas=document.getElementById('chart'), ctx=canvas.getContext('2d');
+function fmt(n){return '₹'+n.toFixed(2)}
+function regression(values){const n=values.length, xs=values.map((_,i)=>i), mx=(n-1)/2, my=values.reduce((a,b)=>a+b,0)/n;let num=0,den=0;xs.forEach((x,i)=>{num+=(x-mx)*(values[i]-my);den+=(x-mx)**2});const slope=den?num/den:0;return {slope,intercept:my-slope*mx}}
+function draw(values, future){const rect=canvas.getBoundingClientRect(), dpr=window.devicePixelRatio||1;canvas.width=rect.width*dpr;canvas.height=rect.height*dpr;ctx.scale(dpr,dpr);const w=rect.width,h=rect.height,p={l:43,r:15,t:18,b:30};const {slope,intercept}=regression(values);const all=[...values,intercept+slope*(values.length-1+future)];const lo=Math.min(...all)-.2,hi=Math.max(...all)+.2;const x=i=>p.l+i/(values.length-1+future)*(w-p.l-p.r), y=v=>h-p.b-(v-lo)/(hi-lo)*(h-p.t-p.b);
+ctx.font='11px Segoe UI';ctx.strokeStyle='#26364d';ctx.fillStyle='#9db0c9';ctx.lineWidth=1;
+for(let i=0;i<4;i++){let val=lo+(hi-lo)*i/3;ctx.beginPath();ctx.moveTo(p.l,y(val));ctx.lineTo(w-p.r,y(val));ctx.stroke();ctx.fillText(val.toFixed(2),2,y(val)+4)}
+ctx.strokeStyle='#55d6a7';ctx.lineWidth=2.5;ctx.beginPath();values.forEach((v,i)=>i?ctx.lineTo(x(i),y(v)):ctx.moveTo(x(i),y(v)));ctx.stroke();
+ctx.fillStyle='#55d6a7';values.forEach((v,i)=>{ctx.beginPath();ctx.arc(x(i),y(v),3,0,Math.PI*2);ctx.fill()});
+const end=intercept+slope*(values.length-1+future);ctx.strokeStyle='#70a7ff';ctx.setLineDash([5,5]);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x(values.length-1),y(values[values.length-1]));ctx.lineTo(x(values.length-1+future),y(end));ctx.stroke();ctx.setLineDash([]);
+ctx.fillStyle='#9db0c9';ctx.fillText('Sample day 1',p.l,h-8);ctx.fillText('Forecast',Math.max(p.l,x(values.length-1+future)-45),h-8)}
+function update(){const city=cityEl.value;let days=Math.max(1,Math.min(30,Number(daysEl.value)||1));daysEl.value=days;const values=dataset.map(d=>d[city]);const {slope,intercept}=regression(values);const estimate=intercept+slope*(values.length-1+days);document.getElementById('latest').textContent=fmt(values.at(-1));document.getElementById('estimate').textContent=fmt(estimate);document.getElementById('cityLabel').textContent=city;document.getElementById('horizon').textContent='In '+days+' day'+(days===1?'':'s');document.getElementById('trend').textContent=slope>=0?'↗ Rising':'↘ Falling';draw(values,days)}
+function renderTable(){document.getElementById('rows').innerHTML=dataset.map(d=>`<tr><td>${d.day}</td><td>₹${d.Chennai.toFixed(2)}</td><td>₹${d.Delhi.toFixed(2)}</td><td>₹${d.Kolkata.toFixed(2)}</td><td>₹${d.Mumbai.toFixed(2)}</td></tr>`).join('')}
+document.getElementById('predict').addEventListener('click',update);cityEl.addEventListener('change',update);window.addEventListener('resize',update);renderTable();update();
+</script>
+</body></html>
